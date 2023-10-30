@@ -77,6 +77,9 @@ class Agent(Entity):
         self.action = Action()
         # script behavior to execute
         self.action_callback = None
+        self.capture_range = 0.05 # capture range
+        self.alive = True # whether agent is alive
+        self.reach_goal = False # whether agent reach_goal
 
 # multi-agent world
 class World(object):
@@ -84,6 +87,7 @@ class World(object):
         # list of agents and entities (can change at execution-time!)
         self.agents = []
         self.landmarks = []
+        self.goal = None
         # communication channel dimensionality
         self.dim_c = 0
         # position dimensionality
@@ -118,17 +122,26 @@ class World(object):
         # set actions for scripted agents 
         for agent in self.scripted_agents:
             agent.action = agent.action_callback(agent, self)
+            if (not agent.alive) or agent.reach_goal:
+                p_force = [0]
+                self.integrate_state(p_force)
+            else:
+                p_force = [None]
+                p_force = self.apply_action_force(p_force)
+                p_force = self.apply_environment_force(p_force)
+                self.integrate_state(p_force)
+
         # gather forces applied to entities
-        p_force = [None] * len(self.entities)
-        # apply agent physical controls
-        p_force = self.apply_action_force(p_force)
-        # apply environment forces
-        p_force = self.apply_environment_force(p_force)
-        # integrate physical state
-        self.integrate_state(p_force)
-        # update agent state
-        for agent in self.agents:
-            self.update_agent_state(agent)
+        # p_force = [None] * len(self.entities)
+        # # apply agent physical controls
+        # p_force = self.apply_action_force(p_force)
+        # # apply environment forces
+        # p_force = self.apply_environment_force(p_force)
+        # # integrate physical state
+        # self.integrate_state(p_force)
+        # # update agent state
+        # for agent in self.agents:
+        #     self.update_agent_state(agent)
 
     # gather agent action forces
     def apply_action_force(self, p_force):

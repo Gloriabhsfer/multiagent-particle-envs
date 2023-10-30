@@ -130,9 +130,11 @@ class MultiAgentEnv(gym.Env):
     # get dones for a particular agent
     # unused right now -- agents are allowed to go beyond the viewing screen
     def _get_done(self, agent):
-        if self.done_callback is None:
-            return False
-        return self.done_callback(agent, self.world)
+        if not agent.alive:
+            return True
+        if agent.reach_goal:
+            return True
+        return False
 
     # get reward for a particular agent
     def _get_reward(self, agent):
@@ -231,7 +233,12 @@ class MultiAgentEnv(gym.Env):
                 geom = rendering.make_circle(entity.size)
                 xform = rendering.Transform()
                 if 'agent' in entity.name:
-                    geom.set_color(*entity.color, alpha=0.5)
+                    if not entity.alive:
+                        geom.set_color(0.5,0.5,0.5)
+                    elif entity.reach_goal:
+                        geom.set_color(0,0,1,alpha=0.8)
+                    else:
+                        geom.set_color(*entity.color, alpha=0.5)
                 else:
                     geom.set_color(*entity.color)
                 geom.add_attr(xform)

@@ -91,6 +91,7 @@ class Scenario(BaseScenario):
             for a in adversary_agents:
                 if np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) < 2 * a.goal_a.size:
                     adv_rew -= 5
+                    agent.alive = False
 
         # Calculate positive reward for agents
         good_agents = self.good_agents(world)
@@ -102,6 +103,7 @@ class Scenario(BaseScenario):
             if min([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in good_agents]) \
                     < 2 * agent.goal_a.size:
                 pos_rew += 5
+                agent.reach_goal = True
             pos_rew -= min(
                 [np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in good_agents])
         return pos_rew + adv_rew
@@ -115,6 +117,7 @@ class Scenario(BaseScenario):
             adv_rew = 0
             if np.sqrt(np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos))) < 2 * agent.goal_a.size:
                 adv_rew += 5
+                agent.reach_goal = True
             return adv_rew
 
 
